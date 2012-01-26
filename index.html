@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="/jscolor/jscolor.js"></script>
+<title></title>
+<style>
+    #color, #opacity { width : 50px; }
+    img { max-width : 45%; }
+</style>
+<script>
+$(function () {
+    $("form").submit(function (e) {
+        var file = document.getElementById("file"),
+            color = $("#color").val(),
+            opacity = $("#opacity").val();
+
+        if (!file.files.length)
+            return false;
+
+        var hex2dec = function (hexrgb) {
+            var regex = /[0-9A-F]{2}/ig,
+                list  = [],
+                rgb   = [];
+
+            while (list = regex.exec(hexrgb)) {
+                rgb.push(parseInt(list[0], 16));
+            }
+
+            return rgb.join(",");
+        };
+
+        var reader = new FileReader();
+        reader.onload = function () {
+            var original = new Image(),
+                filtered = new Image(),
+                canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+
+            original.src = reader.result;
+
+            canvas.width  = original.width;
+            canvas.height = original.height;
+
+            ctx.drawImage(original, 0, 0);
+            ctx.fillStyle = "rgba(" + hex2dec(color) + ", " + opacity + ")";
+            ctx.fillRect(0, 0, original.width, original.height);
+
+            filtered.src = canvas.toDataURL();
+
+            console.log(filtered, canvas.toDataURL());
+
+            $("#preview_box").empty().append(filtered, original);
+        };
+
+        reader.readAsDataURL(file.files[0]);
+
+        return false;
+    });
+});
+</script>
+
+</head>
+<body>
+
+    <form>
+        <div>
+            Image File: <input id="file" type="file" name="file" />
+            #<input id="color" type="text" class="color" value="000000" />
+            Opacity: <input id="opacity" type="text" name="opacity" value="0.5" />
+            <input id="submit" type="submit" name="submit" value="Process!" />
+        </div>
+    </form>
+
+    <div id="preview_box"></div>
+
+</body>
+</html>
+
