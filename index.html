@@ -1,88 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset='utf-8'>
+<meta charset="UTF-8" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="/jscolor/jscolor.js"></script>
+<title></title>
+<style>
+    #color, #opacity { width : 50px; }
+    img { max-width : 45%; }
+</style>
+<script>
+$(function () {
+    $("form").submit(function (e) {
+        var file = document.getElementById("file"),
+            color = $("#color").val(),
+            opacity = $("#opacity").val();
 
-  <title>punytan/js-color-filter @ GitHub</title>
+        if (!file.files.length)
+            return false;
 
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #39b56f;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #c64a90; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #c64a90; }
-    h3 { text-align: center; color: #c64a90; }
-    a { color: #c64a90; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+        var hex2dec = function (hexrgb) {
+            var regex = /[0-9A-F]{2}/ig,
+                list  = [],
+                rgb   = [];
+
+            while (list = regex.exec(hexrgb)) {
+                rgb.push(parseInt(list[0], 16));
+            }
+
+            return rgb.join(",");
+        };
+
+        var reader = new FileReader();
+        reader.onload = function () {
+            var original = new Image(),
+                filtered = new Image(),
+                canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+
+            original.src = reader.result;
+
+            canvas.width  = original.width;
+            canvas.height = original.height;
+
+            ctx.drawImage(original, 0, 0);
+            ctx.fillStyle = "rgba(" + hex2dec(color) + ", " + opacity + ")";
+            ctx.fillRect(0, 0, original.width, original.height);
+
+            filtered.src = canvas.toDataURL();
+
+            console.log(filtered, canvas.toDataURL());
+
+            $("#preview_box").empty().append(filtered, original);
+        };
+
+        reader.readAsDataURL(file.files[0]);
+
+        return false;
+    });
+});
+</script>
+
 </head>
-
 <body>
-  <a href="https://github.com/punytan/js-color-filter"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
-  <div id="container">
+    <form>
+        <div>
+            Image File: <input id="file" type="file" name="file" />
+            #<input id="color" type="text" class="color" value="000000" />
+            Opacity: <input id="opacity" type="text" name="opacity" value="0.5" />
+            <input id="submit" type="submit" name="submit" value="Process!" />
+        </div>
+    </form>
 
-    <div class="download">
-      <a href="https://github.com/punytan/js-color-filter/zipball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/zip.png"></a>
-      <a href="https://github.com/punytan/js-color-filter/tarball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/tar.png"></a>
-    </div>
-
-    <h1><a href="https://github.com/punytan/js-color-filter">js-color-filter</a>
-      <span class="small">by <a href="https://github.com/punytan">punytan</a></span></h1>
-
-    <div class="description">
-      
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-      <h2>Authors</h2>
-      <p>punytan (punytan@gmail.com)<br/>      </p>
-    
-
-    
-      <h2>Contact</h2>
-      <p> (punytan@gmail.com)<br/>      </p>
-    
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="https://github.com/punytan/js-color-filter/zipball/master">zip</a> or
-      <a href="https://github.com/punytan/js-color-filter/tarball/master">tar formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/punytan/js-color-filter</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="https://github.com/punytan/js-color-filter">punytan/js-color-filter</a>
-    </div>
-
-  </div>
+    <div id="preview_box"></div>
 
 </body>
 </html>
+
