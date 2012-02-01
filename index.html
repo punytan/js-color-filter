@@ -3,21 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script type="text/javascript" src="/js-color-filter/jscolor/jscolor.js"></script>
+<script type="text/javascript" src="jscolor/jscolor.js"></script>
 <title></title>
 <style>
     #color, #opacity { width : 50px; }
     img { max-width : 45%; }
+    body { font-size : 0.8em; }
 </style>
 <script>
 $(function () {
     $("form").submit(function (e) {
+        e.preventDefault();
+
         var file = document.getElementById("file"),
             color = $("#color").val(),
             opacity = $("#opacity").val();
 
-        if (!file.files.length)
+        if (! file.files.length || ! file.files[0].type.match(/^image\/(png|jpeg|gif)$/)) {
+            $("#preview_box").empty().text("Image File is required");
             return false;
+        }
 
         var hex2dec = function (hexrgb) {
             var regex = /[0-9A-F]{2}/ig,
@@ -38,23 +43,25 @@ $(function () {
                 canvas = document.createElement("canvas");
             var ctx = canvas.getContext("2d");
 
+            original.onload = function () {
+                canvas.width  = original.width;
+                canvas.height = original.height;
+
+                ctx.drawImage(original, 0, 0);
+                ctx.fillStyle = "rgba(" + hex2dec(color) + ", " + opacity + ")";
+                ctx.fillRect(0, 0, original.width, original.height);
+
+
+                filtered.src = canvas.toDataURL();
+
+                $("#preview_box").empty().append(filtered, original);
+            };
+
             original.src = reader.result;
 
-            canvas.width  = original.width;
-            canvas.height = original.height;
-
-            ctx.drawImage(original, 0, 0);
-            ctx.fillStyle = "rgba(" + hex2dec(color) + ", " + opacity + ")";
-            ctx.fillRect(0, 0, original.width, original.height);
-
-            filtered.src = canvas.toDataURL();
-
-            $("#preview_box").empty().append(filtered, original);
         };
 
         reader.readAsDataURL(file.files[0]);
-
-        return false;
     });
 });
 </script>
@@ -67,7 +74,7 @@ $(function () {
             Image File: <input id="file" type="file" name="file" />
             #<input id="color" type="text" class="color" value="000000" />
             Opacity: <input id="opacity" type="text" name="opacity" value="0.5" />
-            <input id="submit" type="submit" name="submit" value="Process!" />
+            <input type="submit" name="submit" value="Process!" />
         </div>
     </form>
 
